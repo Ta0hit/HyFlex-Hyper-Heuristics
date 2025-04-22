@@ -23,7 +23,7 @@ public abstract class HyFlexTestFrame {
 	protected final int TOTAL_RUNS = 5;
 	
 	/*
-	 * TODO - you should change this based on your computer's performance!
+	 * TODO - you should change this based on your computer's performance! (change for laptop)
 	 *  See the exercise sheet and webpages for the use of the benchmark tool.
 	 *
 	 *  This is my setting with a desktop Ryzen 5900x on Windows 11

@@ -61,8 +61,49 @@ public class RLILS_AM_HH extends HyperHeuristic {
 	// remember to update the roulette wheel selection based on feedback
 	public void solve(ProblemDomain oProblem) {
 		
-		// TODO ...
+		// get the heuristic IDs of the mutation and local search heuristics
+		int[] mtns = oProblem.getHeuristicsOfType(HeuristicType.MUTATION);
+		int[] lss = oProblem.getHeuristicsOfType(HeuristicType.LOCAL_SEARCH);
 
+		// create a set of heuristic pairs
+		HeuristicPair[] hs = new HeuristicPair[mtns.length * lss.length];
+
+		// create a set of heuristic pairs
+		for(int i = 0; i < mtns.length; i++) {
+			// for each mutation heuristic, create a pair with each local search heuristic
+			for(int j = 0; j < lss.length; j++) {
+				hs[i * lss.length + j] = new HeuristicPair(mtns[i], lss[j]);
+			}
+		}
+
+		// initialise the solution
+		int CURRENT_SOLUTION_INDEX = 0;
+		int CANDIDATE_SOLUTION_INDEX = 1;
+		oProblem.initialiseSolution(CURRENT_SOLUTION_INDEX);
+
+		// create a roulette wheel selection method
+		RouletteWheelSelection rws = new RouletteWheelSelection(hs, m_iDefaultScore, m_iLowerBound, m_iUpperBound, rng);
+
+		while(!hasTimeExpired()) {
+			// perform roulette wheel selection
+			HeuristicPair h = rws.performRouletteWheelSelection();
+
+			// apply the h1 heuristic to the current solution
+			oProblem.applyHeuristic(h.h1(), CURRENT_SOLUTION_INDEX, CANDIDATE_SOLUTION_INDEX);
+			// apply the h2 heuristic to the candidate solution
+			oProblem.applyHeuristic(h.h2(), CANDIDATE_SOLUTION_INDEX, CURRENT_SOLUTION_INDEX);
+
+			if(oProblem.getFunctionValue(CANDIDATE_SOLUTION_INDEX) < oProblem.getFunctionValue(CURRENT_SOLUTION_INDEX)) {
+				// if candidate solution is better (h2 heuristic has better result), increase the score so it has a higher chance of being selected
+				rws.incrementScore(h);
+			} else {
+				// if candidate solution isn't better (h1 heuristic has better/same result), decrease the score so it has a lower chance of being selected
+				rws.decrementScore(h);
+			}
+
+			// accept the candidate solution
+			oProblem.copySolution(CANDIDATE_SOLUTION_INDEX, CURRENT_SOLUTION_INDEX);
+		}
 	}
 	
 	public String toString() {

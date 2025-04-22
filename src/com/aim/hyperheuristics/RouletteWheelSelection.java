@@ -74,8 +74,13 @@ public class RouletteWheelSelection {
 	 */
 	public int getScore(HeuristicPair h) {
 
-		// TODO...
-		return -1;
+		Integer score = m_oHeuristicScores.get(h);
+		if(score == null) {
+			return 0;
+		}
+		else {
+			return score;
+		}
 	}
 
 	/**
@@ -86,7 +91,12 @@ public class RouletteWheelSelection {
 	 */
 	public void incrementScore(HeuristicPair h) {
 
-		// TODO...
+		if(getScore(h) < m_iUpperBound && getScore(h) > m_iLowerBound) {
+			m_oHeuristicScores.put(h, getScore(h ) + 1);
+		}
+		else {
+			m_oHeuristicScores.put(h, m_iUpperBound);
+		}
 	}
 
 	/**
@@ -97,7 +107,12 @@ public class RouletteWheelSelection {
 	 */
 	public void decrementScore(HeuristicPair h) {
 
-		// TODO...
+		if(getScore(h) < m_iUpperBound && getScore(h) > m_iLowerBound) {
+			m_oHeuristicScores.put(h, getScore(h) - 1);
+		}
+		else {
+			m_oHeuristicScores.put(h, m_iLowerBound);
+		}
 	}
 
 	/**
@@ -106,8 +121,11 @@ public class RouletteWheelSelection {
 	 */
 	public int getTotalScore() {
 
-		// TODO...
-		return -1;
+		int total = 0;
+        for(HeuristicPair h : m_aoHeuristicPairs) {
+            total += getScore(h);
+        }
+		return total;
 	}
 
 	/**
@@ -117,8 +135,21 @@ public class RouletteWheelSelection {
 	 */
 	public HeuristicPair performRouletteWheelSelection() {
 
-		// TODO
-		return null;
+		int total = getTotalScore();
+		int randomValue = rng.nextInt(total);
+		int cumulativeScore = 0;
+		int i = 0;
+
+		// get the heuristic pair
+		HeuristicPair h = m_aoHeuristicPairs[i];
+
+		// iterate through the heuristic pairs until we find the one that is selected
+		while(cumulativeScore < randomValue) {
+			h = m_aoHeuristicPairs[i];
+			cumulativeScore += getScore(m_aoHeuristicPairs[i++]);
+		}
+
+		return h;
 	}
 
 	/****************************************

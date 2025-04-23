@@ -41,13 +41,19 @@ public class SSPSolution implements SSPSolutionInterface {
 	@Override
 	public SSPSolutionInterface clone() {
 
-		// Create a deep clone of the solution
-		// Need to clone the solution representation to avoid having 2 solution objects referencing the same repr.
-		SolutionRepresentationInterface clonedRepresentation = this.oRepresentation.clone();
+		try {
+			// Call super.clone() to create a shallow copy first
+			SSPSolution clone = (SSPSolution) super.clone();
 
-		// Create a new SSPSolution with the cloned representation and the same objective value
-		return new SSPSolution(clonedRepresentation, this.iObjectiveFunctionValue);
+			// Now perform deep cloning of the mutable fields and clone the solution representation
+			clone.oRepresentation = this.oRepresentation.clone();
 
+			return clone;
+		}
+		catch (CloneNotSupportedException e) {
+			// This should never happen as we implement Cloneable
+			throw new RuntimeException("Clone not supported", e);
+		}
 	}
 
 	@Override

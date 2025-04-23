@@ -21,7 +21,6 @@ public class SSPInstanceReader implements SSPInstanceReaderInterface {
 
 	@Override
 	public SSPInstanceInterface readSSPInstance(Path path, Random random) {
-
 		try (BufferedReader reader = Files.newBufferedReader(path)) {
 			// Read instance name
 			String line = reader.readLine();
@@ -30,25 +29,13 @@ public class SSPInstanceReader implements SSPInstanceReaderInterface {
 			// Read comment
 			reader.readLine(); // Skip the comment line
 
-			// Read hotel location marker
+			// Read hotel location marker and coordinates
 			reader.readLine(); // Skip the "HOTEL_LOCATION" marker
+			Location hotelLocation = readLocationFromFile(reader);
 
-			// Read hotel coordinates
-			line = reader.readLine();
-			String[] hotelCoordinates = line.trim().split("\\s+");
-			int hotelX = Integer.parseInt(hotelCoordinates[0]);
-			int hotelY = Integer.parseInt(hotelCoordinates[1]);
-			Location hotelLocation = new Location(hotelX, hotelY);
-
-			// Read airport location marker
+			// Read airport location marker and coordinates
 			reader.readLine(); // Skip the "AIRPORT_LOCATION" marker
-
-			// Read airport coordinates
-			line = reader.readLine();
-			String[] airportCoordinates = line.trim().split("\\s+");
-			int airportX = Integer.parseInt(airportCoordinates[0]);
-			int airportY = Integer.parseInt(airportCoordinates[1]);
-			Location airportLocation = new Location(airportX, airportY);
+			Location airportLocation = readLocationFromFile(reader);
 
 			// Read points of interest marker
 			reader.readLine(); // Skip the "POINTS_OF_INTEREST" marker
@@ -79,4 +66,20 @@ public class SSPInstanceReader implements SSPInstanceReaderInterface {
 			return null;
 		}
 	}
+
+	/**
+	 * Reads a location (x, y coordinates) from the provided reader.
+	 *
+	 * @param reader The BufferedReader to read from
+	 * @return A new Location object with the parsed coordinates
+	 * @throws IOException If an I/O error occurs
+	 */
+	private Location readLocationFromFile(BufferedReader reader) throws IOException {
+		String line = reader.readLine();
+		String[] coordinates = line.trim().split("\\s+");
+		int x = Integer.parseInt(coordinates[0]);
+		int y = Integer.parseInt(coordinates[1]);
+		return new Location(x, y);
+	}
 }
+

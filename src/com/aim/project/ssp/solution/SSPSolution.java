@@ -41,14 +41,19 @@ public class SSPSolution implements SSPSolutionInterface {
 	@Override
 	public SSPSolutionInterface clone() {
 
-		// TODO ensure that you return a deep clone of the current solution!
-		return null;
+		// Create a deep clone of the solution
+		// Need to clone the solution representation to avoid having 2 solution objects referencing the same repr.
+		SolutionRepresentationInterface clonedRepresentation = this.oRepresentation.clone();
+
+		// Create a new SSPSolution with the cloned representation and the same objective value
+		return new SSPSolution(clonedRepresentation, this.iObjectiveFunctionValue);
+
 	}
 
 	@Override
 	public int getNumberOfLocations() {
-		
-		// TODO
-		return -1;
+
+		// Delegate to the solution representation to get the number of locations
+		return this.oRepresentation.getNumberOfLocations();
 	}
 }

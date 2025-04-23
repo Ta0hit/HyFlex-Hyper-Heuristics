@@ -15,6 +15,9 @@ import AbstractClasses.ProblemDomain;
  */
 public class SightseeingProblemDomain extends ProblemDomain implements Visualisable, InLabPracticalExamInterface {
 
+	public SSPInstanceInterface m_oInstance;
+	public SSPSolutionInterface m_oBestSolution;
+
 	public SightseeingProblemDomain(long seed) {
 
         super(seed);
@@ -31,8 +34,8 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	
 	public SSPSolutionInterface getBestSolution() {
 
-		// TODO 
-		return null;
+		// Return the best solution found so far
+		return m_oBestSolution;
 	}
 
 	@Override
@@ -75,10 +78,13 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public double getBestSolutionValue() {
 
-		// TODO
+		// TODO: Return the objective function value of the best solution
+		if (m_oBestSolution != null) {
+			return m_oBestSolution.getObjectiveFunctionValue();
+		}
 		return -1.0d;
 	}
-	
+
 	@Override
 	public double getFunctionValue(int index) {
 
@@ -123,20 +129,25 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 
 	@Override
 	public void initialiseSolution(int index) {
-		
-		// TODO - make sure that you also update the best solution/first initial solution!
 
+		// TODO - make sure that you also update the best solution/first initial solution!
+		// When initializing the first solution, you should also set it as the best solution:
+		// if (m_oBestSolution == null) {
+		//     m_oBestSolution = getSolution(index);
+		// }
 	}
 
 	@Override
 	public void loadInstance(int instanceId) {
 
 		// TODO create instance reader and problem instance
+		// Initialize m_oInstance with the loaded instance
+		// For example:
+		// m_oInstance = new SSPInstance(...);
 
-		
 		// TODO set the objective function in each of the heuristics
 
-	
+
 	}
 
 	@Override
@@ -159,12 +170,12 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 		// TODO update username(s)
 		return "[Username's] SSP Domain";
 	}
-	
+
 	@Override
 	public SSPInstanceInterface getLoadedInstance() {
 
-		// TODO
-		return null;
+		// Return the loaded instance
+		return m_oInstance;
 	}
 
 	@Override
@@ -189,7 +200,12 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public void printBestSolutionFound() {
 
-		// TODO
+		// Print the best solution found
+		if (m_oBestSolution != null) {
+			// TODO: Implement the printing logic
+		} else {
+			System.out.println("No solution found yet");
+		}
 	}
 
 	/**
@@ -198,7 +214,12 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public void printObjectiveValueOfTheSolutionFound() {
 
-		// TODO
+		// Print the objective value of the best solution found
+		if (m_oBestSolution != null) {
+			System.out.println("Best solution objective value: " + m_oBestSolution.getObjectiveFunctionValue());
+		} else {
+			System.out.println("No solution found yet");
+		}
 	}
 
 	/**

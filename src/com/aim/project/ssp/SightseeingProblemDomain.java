@@ -18,15 +18,19 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 
     public SSPInstanceInterface m_oInstance;
 	public SSPSolutionInterface m_oBestSolution;
+	private final SSPSolutionInterface[] solutionMemory;
+	private HeuristicInterface[] heuristics;
 
 	public SightseeingProblemDomain(long seed) {
         super(seed);
 
 		// Set default memory size (typically 2 for simple implementations)
-		setMemorySize(2);
+		int memorySize = 2;
+		setMemorySize(memorySize);
+        solutionMemory = new SSPSolutionInterface[memorySize];
 
-		// Initialize the array of low-level heuristics
-        HeuristicInterface[] heuristics = new HeuristicInterface[]{
+		// Initialise the array of low-level heuristics
+        heuristics = new HeuristicInterface[]{
                 // Mutation operators
                 new AdjacentSwap(rng),
                 new Reinsertion(rng),
@@ -42,8 +46,13 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	
 	public SSPSolutionInterface getSolution(int index) {
 
-		// TODO
-		return null;
+		// Return the solution at the specified index
+		if(index >= 0 && index < solutionMemory.length) {
+			return solutionMemory[index];
+		}
+		else {
+			throw new IndexOutOfBoundsException("Invalid solution index: " + index);
+		}
 	}
 	
 	public SSPSolutionInterface getBestSolution() {
@@ -55,30 +64,116 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public double applyHeuristic(int hIndex, int currentIndex, int candidateIndex) {
 
-		// TODO
-		return -1.0d;
+		// Check if heuristic index is valid
+		if(hIndex < 0 || hIndex >= heuristics.length) {
+			throw new IllegalArgumentException("Invalid heuristic index: " + hIndex);
+		}
+
+		// Get the heuristic to apply
+		HeuristicInterface heuristic = heuristics[hIndex];
+
+		// Get the source solution
+		SSPSolutionInterface currentSolution = getSolution(currentIndex);
+
+		// If this is a first-time operation, ensure solutions exist
+		if(currentSolution == null) {
+			throw new IllegalStateException("Source solution is null. Did you initialize the solutions?");
+		}
+
+		// Create a copy of the source solution to modify
+		SSPSolutionInterface candidateSolution = currentSolution.clone();
+
+		// Apply the heuristic to the candidate solution (default parameters for now)
+		double depthOfSearch = 0.0;
+		double intensityOfMutation = 0.0;
+
+		// Apply the heuristic and get the new objective value
+		double objectiveValue = heuristic.apply(candidateSolution, depthOfSearch, intensityOfMutation);
+
+		// Save the candidate solution at the destination index
+		solutionMemory[candidateIndex] = candidateSolution;
+
+		// Record the heuristic call in the parent class
+		heuristicCallRecord[hIndex]++;
+
+		// Update best solution if necessary
+		if(objectiveValue < getBestSolutionValue() && m_oBestSolution != null) {
+			m_oBestSolution = candidateSolution.clone();
+		}
+
+		return objectiveValue;
 	}
 
 	@Override
 	public double applyHeuristic(int hIndex, int parent1Index, int parent2Index, int candidateIndex) {
 
+		// Check if heuristic index is valid
+		if(hIndex < 0 || hIndex >= heuristics.length) {
+			throw new IllegalArgumentException("Invalid heuristic index: " + hIndex);
+		}
 
-		// TODO
-		return -1.0d;
+		// Get the heuristic to apply
+		HeuristicInterface heuristic = heuristics[hIndex];
+
+		// Get the source solutions
+		SSPSolutionInterface parent1Solution = getSolution(parent1Index);
+		SSPSolutionInterface parent2Solution = getSolution(parent2Index);
+
+		// If this is a first-time operation, ensure solutions exist
+		if(parent1Solution == null || parent2Solution == null) {
+			throw new IllegalStateException("Source solutions are null. Did you initialize the solutions?");
+		}
+
+		// Create a copy of the first parent solution to modify
+		SSPSolutionInterface candidateSolution = parent1Solution.clone();
+
+		// Apply the heuristic to the candidate solution (default parameters for now)
+		double depthOfSearch = 0.0;
+		double intensityOfMutation = 0.0;
+
+		// Apply the heuristic and get the new objective value
+		double objectiveValue = heuristic.apply(candidateSolution, depthOfSearch, intensityOfMutation);
+
+		// Save the candidate solution at the destination index
+		solutionMemory[candidateIndex] = candidateSolution;
+
+		// Record the heuristic call in the parent class
+		heuristicCallRecord[hIndex]++;
+
+		// Update best solution if necessary
+		if(objectiveValue < getBestSolutionValue() && m_oBestSolution != null) {
+			m_oBestSolution = candidateSolution.clone();
+		}
+
+		return objectiveValue;
 	}
 
 	@Override
 	public String bestSolutionToString() {
 
-		// TODO
-		return null;
-	}
+		// Check if a best solution exists
+		if (m_oBestSolution != null) {
+			// Return the objective function value of the best solution
+			return String.valueOf(m_oBestSolution.getObjectiveFunctionValue());
+		}
+		// Return a default value if no best solution exists
+		return "No best solution found";
+    }
 
 	@Override
 	public boolean compareSolutions(int iIndex1, int iIndex2) {
 
-		// TODO
-		return false;
+		// Retrieve the solutions from the memory
+		SSPSolutionInterface solution1 = getSolution(solutionIndex1);
+		SSPSolutionInterface solution2 = getSolution(solutionIndex2);
+
+		// Ensure both solutions are not null
+		if(solution1 == null || solution2 == null) {
+			throw new IllegalStateException("One or both solutions are null. Ensure solutions are initialized.");
+		}
+
+		// Compare the structures of the two solutions
+		return solution1.equals(solution2);
 	}
 
 	@Override
@@ -130,8 +225,8 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public int getNumberOfHeuristics() {
 
-		// TODO - has to be hard-coded due to the design of the HyFlex framework
-		return -1;
+		// Needs to be hardcoded because of HyFlex
+		return 5;
 	}
 
 	@Override
@@ -143,13 +238,22 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 
 	@Override
 	public void initialiseSolution(int index) {
-
-		// TODO - make sure that you also update the best solution/first initial solution!
-		// When initializing the first solution, you should also set it as the best solution:
-		// if (m_oBestSolution == null) {
-		//     m_oBestSolution = getSolution(index);
-		// }
-	}
+    // Check that the instance is loaded
+    if (m_oInstance == null) {
+        throw new IllegalStateException("Problem instance not loaded. Call loadInstance first.");
+    }
+    
+    // Create a new solution
+    SSPSolutionInterface solution = m_oInstance.createSolution(SSPInstanceInterface.InitialisationMode.CONSTRUCTIVE);
+    
+    // Store it in the solution memory
+    solutionMemory[index] = solution;
+    
+    // Update the best solution if needed
+    if (m_oBestSolution == null) {
+        m_oBestSolution = solution.clone();
+    }
+}
 
 	@Override
 	public void loadInstance(int instanceId) {

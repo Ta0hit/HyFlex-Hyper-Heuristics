@@ -16,32 +16,28 @@ import AbstractClasses.ProblemDomain;
  */
 public class SightseeingProblemDomain extends ProblemDomain implements Visualisable, InLabPracticalExamInterface {
 
-	private final HeuristicInterface[] heuristics;
-	public SSPInstanceInterface m_oInstance;
+    public SSPInstanceInterface m_oInstance;
 	public SSPSolutionInterface m_oBestSolution;
 
 	public SightseeingProblemDomain(long seed) {
         super(seed);
-    
-        // Set default memory size (typically 2 for simple implementations)
-        setMemorySize(2);
 
-		// Create the array of low-level heuristics with your implemented heuristics
-		HeuristicInterface[] heuristics = new HeuristicInterface[] {
-				// Mutation operators
-				new AdjacentSwap(rng),         // Swap adjacent locations
-				new Reinsertion(rng),          // Remove and reinsert a location
+		// Set default memory size (typically 2 for simple implementations)
+		setMemorySize(2);
 
-				// Local search operators
-				new DavissHillClimbing(rng),   // Davis's hill climbing
-				new NextDescent(rng),          // Next descent local search
+		// Initialize the array of low-level heuristics
+        HeuristicInterface[] heuristics = new HeuristicInterface[]{
+                // Mutation operators
+                new AdjacentSwap(rng),
+                new Reinsertion(rng),
 
-				// Crossover operators
-				new OX(rng)                    // Order crossover
-		};
+                // Local search operators
+                new DavissHillClimbing(rng),
+                new NextDescent(rng),
 
-		// Store the heuristics internally so they can be accessed through the HyFlex interface
-		this.heuristics = heuristics;
+                // Crossover operators
+                new OX(rng)
+        };
 	}
 	
 	public SSPSolutionInterface getSolution(int index) {

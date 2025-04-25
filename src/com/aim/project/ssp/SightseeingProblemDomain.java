@@ -26,7 +26,7 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
     public SSPInstanceInterface m_oInstance;
 	public SSPSolutionInterface m_oBestSolution;
 	private final SSPSolutionInterface[] solutionMemory;
-	private HeuristicInterface[] heuristics;
+	private final HeuristicInterface[] heuristics;
 
 	public SightseeingProblemDomain(long seed) {
         super(seed);

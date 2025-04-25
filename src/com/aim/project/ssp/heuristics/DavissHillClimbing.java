@@ -5,6 +5,8 @@ import java.util.stream.IntStream;
 
 import com.aim.project.ssp.interfaces.HeuristicInterface;
 import com.aim.project.ssp.interfaces.SSPSolutionInterface;
+import com.aim.project.ssp.interfaces.SolutionRepresentationInterface;
+import com.aim.project.ssp.solution.SolutionRepresentation;
 
 
 /**
@@ -25,13 +27,54 @@ public class DavissHillClimbing extends HeuristicOperators implements HeuristicI
 	@Override
 	public double apply(SSPSolutionInterface solution, double dos, double iom) {
 
-		// TODO implementation of Davis's Hill Climbing
-		return -1.0d;
-	}
+		SolutionRepresentationInterface representation = solution.getSolutionRepresentation();
+		int[] currentSolution = representation.getSolutionRepresentation().clone();
+		int currentCost = solution.getObjectiveFunctionValue();
+		int length = currentSolution.length;
 
-	/*
-	 * TODO update the methods below to return the correct boolean value.
-	 */
+		int iterations = calculateNumberOfIterations(dos);
+		boolean improvementFound;
+
+		for(int iter = 0; iter < iterations; iter++) {
+			improvementFound = false;
+
+			// Create random order of indices to try swaps
+			int[] indices = IntStream.range(0, length - 1).toArray();
+			shuffleArray(indices);
+
+			// Try all possible adjacent swaps in random order
+			for(int i : indices) {
+				// Create neighbor by swapping adjacent elements
+				int[] neighbor = currentSolution.clone();
+				swap(neighbor, i, i + 1);
+
+				// Evaluate neighbor
+				int neighborCost = m_oObjectiveFunction.getObjectiveFunctionValue(
+						new SolutionRepresentation(neighbor));
+
+				// If improvement found, accept it and restart
+				if(neighborCost < currentCost) {
+					System.arraycopy(neighbor, 0, currentSolution, 0, length);
+					currentCost = neighborCost;
+					improvementFound = true;
+					break; // Restart with new solution
+				}
+			}
+
+			// If no improvement found in full pass, terminate
+			if(!improvementFound) {
+				break;
+			}
+		}
+
+		// Update the solution if improvements were found
+		if(currentCost != solution.getObjectiveFunctionValue()) {
+			representation.setSolutionRepresentation(currentSolution);
+			solution.setObjectiveFunctionValue(currentCost);
+		}
+
+		return currentCost;
+	}
 
 	@Override
 	public boolean isCrossover() {
@@ -48,6 +91,6 @@ public class DavissHillClimbing extends HeuristicOperators implements HeuristicI
 	@Override
 	public boolean usesDepthOfSearch() {
 
-		return false;
+		return true;
 	}
 }

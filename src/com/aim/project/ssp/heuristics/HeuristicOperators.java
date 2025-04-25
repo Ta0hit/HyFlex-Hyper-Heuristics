@@ -34,4 +34,21 @@ public class HeuristicOperators {
 		array[j] = temp;
 	}
 
+	protected int calculateNumberOfIterations(double depthOfSearch) {
+		if(depthOfSearch < 0.2) return 1;
+		if(depthOfSearch < 0.4) return 2;
+		if(depthOfSearch < 0.6) return 3;
+		if(depthOfSearch < 0.8) return 4;
+		return 5; // For depthOfSearch >= 0.8
+	}
+
+	protected void shuffleArray(int[] array) {
+		for(int i = array.length - 1; i > 0; i--) {
+			int index = m_oRandom.nextInt(i + 1);
+			// Simple swap
+			int temp = array[index];
+			array[index] = array[i];
+			array[i] = temp;
+		}
+	}
 }

@@ -2,10 +2,17 @@ package com.aim.project.ssp;
 
 
 import com.aim.project.ssp.heuristics.*;
+import com.aim.project.ssp.instance.InitialisationMode;
 import com.aim.project.ssp.instance.Location;
+import com.aim.project.ssp.instance.reader.SSPInstanceReader;
 import com.aim.project.ssp.interfaces.*;
 
 import AbstractClasses.ProblemDomain;
+
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Warren G Jackson
@@ -164,8 +171,8 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	public boolean compareSolutions(int iIndex1, int iIndex2) {
 
 		// Retrieve the solutions from the memory
-		SSPSolutionInterface solution1 = getSolution(solutionIndex1);
-		SSPSolutionInterface solution2 = getSolution(solutionIndex2);
+		SSPSolutionInterface solution1 = getSolution(iIndex1);
+		SSPSolutionInterface solution2 = getSolution(iIndex2);
 
 		// Ensure both solutions are not null
 		if(solution1 == null || solution2 == null) {
@@ -182,12 +189,21 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 		// TODO - BEWARE this should copy the solution, not the reference to it!
 		//			That is, that if we apply a heuristic to the solution in index 'b',
 		//			then it does not modify the solution in index 'a' or vice-versa.
+		// Retrieve the source solution
+		SSPSolutionInterface sourceSolution = getSolution(a);
+
+		// Ensure the source solution is not null
+		if (sourceSolution == null) {
+			throw new IllegalStateException("Source solution is null. Ensure the solution is initialized.");
+		}
+
+		// Clone the source solution and store it at the destination index
+		solutionMemory[b] = sourceSolution.clone();
 	}
 
 	@Override
 	public double getBestSolutionValue() {
 
-		// TODO: Return the objective function value of the best solution
 		if (m_oBestSolution != null) {
 			return m_oBestSolution.getObjectiveFunctionValue();
 		}
@@ -197,29 +213,78 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public double getFunctionValue(int index) {
 
-		// TODO
-		return -1.0d;
+		// Validate the solution index
+		if(index < 0 || index >= solutionMemory.length) {
+			throw new IndexOutOfBoundsException("Invalid solution index: " + index);
+		}
+
+		// Retrieve the solution
+		SSPSolutionInterface solution = solutionMemory[index];
+
+		// Ensure the solution is not null
+		if(solution == null) {
+			throw new IllegalStateException("Solution at index " + index + " is null. Ensure it is initialized.");
+		}
+
+		//Return the objective function value of the solution
+		return solution.getObjectiveFunctionValue();
 	}
 
-	// TODO
 	@Override
 	public int[] getHeuristicsOfType(HeuristicType type) {
 
-		// TODO
-		return null;
+		// Define which heuristics belong to which types based on their indices
+        return switch (type) {
+            case MUTATION ->
+                // AdjacentSwap (0) and Reinsertion (1) are mutation operators
+                    new int[]{0, 1};
+            case LOCAL_SEARCH ->
+                // DavissHillClimbing (2) and NextDescent (3) are local search operators
+                    new int[]{2, 3};
+            case CROSSOVER ->
+                // OX (4) is a crossover operator
+                    new int[]{4};
+            case RUIN_RECREATE ->
+                // No ruin-recreate heuristics in current implementation
+                    null;
+            default -> null;
+        };
 	}
 
 	@Override
 	public int[] getHeuristicsThatUseDepthOfSearch() {
 
-		// TODO
-		return null;
+		List<Integer> matchingIndices = new ArrayList<>();
+
+		for(int i = 0; i < heuristics.length; i++) {
+			if(heuristics[i].usesDepthOfSearch()) {
+				matchingIndices.add(i);
+			}
+		}
+
+		if(matchingIndices.isEmpty()) {
+			return null;
+		}
+
+		return matchingIndices.stream().mapToInt(Integer::intValue).toArray();
 	}
 
 	@Override
 	public int[] getHeuristicsThatUseIntensityOfMutation() {
 
-		return null;
+		List<Integer> matchingIndices = new ArrayList<>();
+
+		for(int i = 0; i < heuristics.length; i++) {
+			if(heuristics[i].usesIntensityOfMutation()) {
+				matchingIndices.add(i);
+			}
+		}
+
+		if(matchingIndices.isEmpty()) {
+			return null;
+		}
+
+		return matchingIndices.stream().mapToInt(Integer::intValue).toArray();
 	}
 
 	@Override
@@ -232,40 +297,80 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public int getNumberOfInstances() {
 
-		// TODO
-		return -1;
+		// Update this to the number of instances you have
+		return 7;
 	}
 
 	@Override
 	public void initialiseSolution(int index) {
-    // Check that the instance is loaded
-    if (m_oInstance == null) {
-        throw new IllegalStateException("Problem instance not loaded. Call loadInstance first.");
-    }
-    
-    // Create a new solution
-    SSPSolutionInterface solution = m_oInstance.createSolution(SSPInstanceInterface.InitialisationMode.CONSTRUCTIVE);
-    
-    // Store it in the solution memory
-    solutionMemory[index] = solution;
-    
-    // Update the best solution if needed
-    if (m_oBestSolution == null) {
-        m_oBestSolution = solution.clone();
-    }
+
+		// Validate the solution index
+		if(index < 0 || index >= solutionMemory.length) {
+			throw new IndexOutOfBoundsException("Invalid solution index: " + index);
+		}
+
+		// Check that the instance is loaded
+		if(m_oInstance == null) {
+			throw new IllegalStateException("Problem instance not loaded. Call loadInstance first.");
+		}
+
+		// Create a new solution
+		SSPSolutionInterface solution = m_oInstance.createSolution(InitialisationMode.RANDOM);
+
+		// Store it in the solution memory
+		solutionMemory[index] = solution;
+
+		// Update the best solution if this is the first solution or if the new solution is better
+		if(m_oBestSolution == null || solution.getObjectiveFunctionValue() < m_oBestSolution.getObjectiveFunctionValue()) {
+			m_oBestSolution = solution.clone();
+		}
 }
 
 	@Override
 	public void loadInstance(int instanceId) {
 
-		// TODO create instance reader and problem instance
-		// Initialize m_oInstance with the loaded instance
-		// For example:
-		// m_oInstance = new SSPInstance(...);
+		// Validate instance ID
+		if(instanceId < 0 || instanceId >= getNumberOfInstances()) {
+			throw new IllegalArgumentException("Invalid instance ID: " + instanceId);
+		}
 
-		// TODO set the objective function in each of the heuristics
+		// Map instance IDs to their corresponding files
+		String[] instanceFiles = {
+				"square.ssp",
+				"libraries-15.ssp",
+				"carparks-40.ssp",
+				"tramstops-85.ssp",
+				"grid.ssp",
+				"clustered.ssp",
+				"chatgpt-instance-100.ssp"
+		};
 
+		// Get the filename for the requested instance
+		String filename = instanceFiles[instanceId];
 
+		// Create instance reader and load the instance
+		SSPInstanceReader reader = new SSPInstanceReader();
+		Path instancePath = Path.of("instances", filename); // Assuming instances are in an "instances" folder
+
+		try {
+			// Read the instance file
+			m_oInstance = reader.readSSPInstance(instancePath, rng);
+
+			// Set the objective function in each heuristic
+			ObjectiveFunctionInterface objectiveFunction = m_oInstance.getSSPObjectiveFunction();
+			for(HeuristicInterface heuristic : heuristics) {
+				if(heuristic instanceof ObjectiveFunctionAware) {
+					((ObjectiveFunctionAware) heuristic).setObjectiveFunction(objectiveFunction);
+				}
+			}
+
+			// Reset solution memory and best solution
+			Arrays.fill(solutionMemory, null);
+			m_oBestSolution = null;
+
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to load instance: " + filename, e);
+		}
 	}
 
 	@Override

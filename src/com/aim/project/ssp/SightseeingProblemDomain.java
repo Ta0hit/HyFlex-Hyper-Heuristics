@@ -304,16 +304,6 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public void initialiseSolution(int index) {
 
-		// Validate the solution index
-		if(index < 0 || index >= solutionMemory.length) {
-			throw new IndexOutOfBoundsException("Invalid solution index: " + index);
-		}
-
-		// Check that the instance is loaded
-		if(m_oInstance == null) {
-			throw new IllegalStateException("Problem instance not loaded. Call loadInstance first.");
-		}
-
 		// Create a new solution
 		SSPSolutionInterface solution = m_oInstance.createSolution(InitialisationMode.RANDOM);
 
@@ -353,7 +343,7 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 
 		// TODO CHANGE PATH FOR LAPTOP
 		String projectRoot = System.getProperty("user.dir"); // Gets the project root directory
-		Path instancePath = Path.of(projectRoot, "src", "instances", "ssp", filename);
+		Path instancePath = Path.of("C:\\Users\\Taohi\\HyFlex-Hyper-Heuristics\\src\\instances\\ssp", filename);
 
 		try {
 			// Read the instance file

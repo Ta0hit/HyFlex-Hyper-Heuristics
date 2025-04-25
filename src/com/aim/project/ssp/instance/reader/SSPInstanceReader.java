@@ -61,9 +61,7 @@ public class SSPInstanceReader implements SSPInstanceReaderInterface {
 			return new SSPInstance(numberOfLocations, locationsArray, hotelLocation, airportLocation, random);
 
 		} catch (IOException e) {
-			System.err.println("Error reading SSP instance file: " + e.getMessage());
-			e.printStackTrace();
-			return null;
+			throw new RuntimeException("Error reading SSP instance file: " + e.getMessage(), e);
 		}
 	}
 

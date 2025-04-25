@@ -4,6 +4,7 @@ import java.util.Random;
 
 import com.aim.project.ssp.interfaces.HeuristicInterface;
 import com.aim.project.ssp.interfaces.SSPSolutionInterface;
+import com.aim.project.ssp.interfaces.SolutionRepresentationInterface;
 
 /**
  *
@@ -23,13 +24,49 @@ public class Reinsertion extends HeuristicOperators implements HeuristicInterfac
 	@Override
 	public double apply(SSPSolutionInterface solution, double depthOfSearch, double intensityOfMutation) {
 
-		// TODO implementation of Reinsertion
-		return -1.0d;
+		SolutionRepresentationInterface representation = solution.getSolutionRepresentation();
+		int[] tour = representation.getSolutionRepresentation();
+		int length = tour.length;
+
+		// Calculate number of reinsertions based on intensity
+		int numReinsertions = calculateNumberOfReinsertions(intensityOfMutation);
+
+		for(int i = 0; i < numReinsertions; i++) {
+			// Select random element to remove (all positions are valid)
+			int removePos = m_oRandom.nextInt(length);
+			int element = tour[removePos];
+
+			// Select random insertion position (different from original)
+			int insertPos;
+			do {
+				insertPos = m_oRandom.nextInt(length);
+			} while (insertPos == removePos);
+
+			// Perform reinsertion
+			if(removePos < insertPos) {
+				// Shift elements left
+				System.arraycopy(tour, removePos + 1, tour, removePos, insertPos - removePos);
+			}
+			else {
+				// Shift elements right
+				System.arraycopy(tour, insertPos, tour, insertPos + 1, removePos - insertPos);
+			}
+			tour[insertPos] = element;
+		}
+
+		// Update solution
+		int newValue = m_oObjectiveFunction.getObjectiveFunctionValue(representation);
+		solution.setObjectiveFunctionValue(newValue);
+		return newValue;
 	}
 
-	/*
-	 * TODO update the methods below to return the correct boolean value.
-	 */
+	private int calculateNumberOfReinsertions(double intensityOfMutation) {
+		if(intensityOfMutation < 0.2) return 1;
+		if(intensityOfMutation < 0.4) return 2;
+		if(intensityOfMutation < 0.6) return 3;
+		if(intensityOfMutation < 0.8) return 4;
+		return 5; // For intensityOfMutation >= 0.8
+	}
 
 	@Override
 	public boolean isCrossover() {
@@ -40,7 +77,7 @@ public class Reinsertion extends HeuristicOperators implements HeuristicInterfac
 	@Override
 	public boolean usesIntensityOfMutation() {
 
-		return false;
+		return true;
 	}
 
 	@Override

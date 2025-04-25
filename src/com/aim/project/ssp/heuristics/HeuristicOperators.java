@@ -28,7 +28,7 @@ public class HeuristicOperators {
 		m_oObjectiveFunction = f;
 	}
 
-	public void swap(int[] array, int i, int j) {
+	protected void swap(int[] array, int i, int j) {
 		int temp = array[i];
 		array[i] = array[j];
 		array[j] = temp;

@@ -186,14 +186,14 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public void copySolution(int a, int b) {
 
-		// TODO - BEWARE this should copy the solution, not the reference to it!
-		//			That is, that if we apply a heuristic to the solution in index 'b',
-		//			then it does not modify the solution in index 'a' or vice-versa.
+		// BEWARE this should copy the solution, not the reference to it!
+		//	That is, that if we apply a heuristic to the solution in index 'b',
+		//	then it does not modify the solution in index 'a' or vice-versa.
 		// Retrieve the source solution
 		SSPSolutionInterface sourceSolution = getSolution(a);
 
 		// Ensure the source solution is not null
-		if (sourceSolution == null) {
+		if(sourceSolution == null) {
 			throw new IllegalStateException("Source solution is null. Ensure the solution is initialized.");
 		}
 
@@ -350,7 +350,10 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 
 		// Create instance reader and load the instance
 		SSPInstanceReader reader = new SSPInstanceReader();
-		Path instancePath = Path.of("instances", filename); // Assuming instances are in an "instances" folder
+
+		// TODO CHANGE PATH FOR LAPTOP
+		String projectRoot = System.getProperty("user.dir"); // Gets the project root directory
+		Path instancePath = Path.of(projectRoot, "src", "instances", "ssp", filename);
 
 		try {
 			// Read the instance file
@@ -359,9 +362,7 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 			// Set the objective function in each heuristic
 			ObjectiveFunctionInterface objectiveFunction = m_oInstance.getSSPObjectiveFunction();
 			for(HeuristicInterface heuristic : heuristics) {
-				if(heuristic instanceof ObjectiveFunctionAware) {
-					((ObjectiveFunctionAware) heuristic).setObjectiveFunction(objectiveFunction);
-				}
+				heuristic.setObjectiveFunction(objectiveFunction);
 			}
 
 			// Reset solution memory and best solution
@@ -376,22 +377,67 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public void setMemorySize(int size) {
 
-		// TODO
+		// Validate the memory size
+		if(size <= 0) {
+			throw new IllegalArgumentException("Memory size must be greater than 0");
+		}
 
+		// Create new solution memory array
+		SSPSolutionInterface[] newMemory = new SSPSolutionInterface[size];
+
+		// Copy existing solutions to the new array (if any)
+		if(solutionMemory != null) {
+			int elementsToCopy = Math.min(solutionMemory.length, size);
+			System.arraycopy(solutionMemory, 0, newMemory, 0, elementsToCopy);
+
+			// Update best solution reference if it exists in the old array (remove if not)
+			if(m_oBestSolution != null) {
+				boolean bestSolutionPreserved = false;
+				for(int i = 0; i < elementsToCopy; i++) {
+					if(solutionMemory[i] == m_oBestSolution) {
+						bestSolutionPreserved = true;
+						break;
+					}
+				}
+				if(!bestSolutionPreserved) {
+					m_oBestSolution = null;
+				}
+			}
+		}
+
+		// Update the memory reference
+		for(int i = 0; i < newMemory.length; i++) {
+			if(newMemory[i] == null) {
+				// Initialize new slots if needed
+				initialiseSolution(i);
+			}
+		}
 	}
 
 	@Override
 	public String solutionToString(int index) {
 
-		// TODO
-		return null;
+		// Validate the solution index
+		if(index < 0 || index >= solutionMemory.length) {
+			throw new IndexOutOfBoundsException("Invalid solution index: " + index);
+		}
+
+		// Retrieve the solution
+		SSPSolutionInterface solution = solutionMemory[index];
+
+		// Ensure the solution is not null
+		if(solution == null) {
+			throw new IllegalStateException("Solution at index " + index + " is null. Ensure it is initialized.");
+		}
+
+		// Return the string representation of the solution
+		return solution.toString();
 	}
 
 	@Override
 	public String toString() {
 
-		// TODO update username(s)
-		return "[Username's] SSP Domain";
+		return "SSP Problem Domain";
 	}
 
 	@Override
@@ -404,8 +450,15 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public Location[] getRouteOrderedByLocations() {
 
-		// TODO
-		return null;
+		// Check if the best solution exists
+		if(m_oBestSolution != null) {
+			// Get the ordered list of locations from the best solution
+			ArrayList<Location> locationList = m_oInstance.getSolutionAsListOfLocations(m_oBestSolution);
+			return locationList.toArray(new Location[0]);
+		}
+		else {
+			throw new IllegalStateException("No best solution found. Ensure a solution is initialized.");
+		}
 	}
 
 	/**
@@ -423,11 +476,37 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public void printBestSolutionFound() {
 
-		// Print the best solution found
-		if (m_oBestSolution != null) {
-			// TODO: Implement the printing logic
-		} else {
+		if(m_oBestSolution == null) {
 			System.out.println("No solution found yet");
+			return;
+		}
+
+		try {
+			// Get the ordered locations (hotel -> POIs -> airport)
+			ArrayList<Location> locations = m_oInstance.getSolutionAsListOfLocations(m_oBestSolution);
+
+			// Build the output string
+			StringBuilder sb = new StringBuilder();
+
+			// Append hotel
+			Location hotel = locations.getFirst();
+			sb.append(String.format("(%d,%d)", hotel.x(), hotel.y()));
+
+			// Append all points of interest
+			for(int i = 1; i < locations.size() - 1; i++) {
+				Location loc = locations.get(i);
+				sb.append(" - ").append(String.format("(%d,%d)", loc.x(), loc.y()));
+			}
+
+			// Append airport
+			Location airport = locations.getLast();
+			sb.append(" - ").append(String.format("(%d,%d)", airport.x(), airport.y()));
+
+			// Print the formatted string
+			System.out.println(sb.toString());
+
+		} catch (Exception e) {
+			System.out.println("Error printing solution: " + e.getMessage());
 		}
 	}
 
@@ -460,7 +539,42 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public void printInitialSolution() {
 
-		// TODO
+		// Check if we have at least one solution in memory
+		if (solutionMemory == null || solutionMemory.length == 0 || solutionMemory[0] == null) {
+			System.out.println("No initial solution available. Call initialiseSolution() first.");
+			return;
+		}
+
+		try {
+			// Get the first solution in memory (typically the initial one)
+			SSPSolutionInterface initialSolution = solutionMemory[0];
+
+			// Get the ordered locations (hotel -> POIs -> airport)
+			ArrayList<Location> locations = m_oInstance.getSolutionAsListOfLocations(initialSolution);
+
+			// Build the output string
+			StringBuilder sb = new StringBuilder();
+
+			// Append hotel
+			Location hotel = locations.getFirst();
+			sb.append(String.format("(%d,%d)", hotel.x(), hotel.y()));
+
+			// Append all points of interest
+			for (int i = 1; i < locations.size() - 1; i++) {
+				Location loc = locations.get(i);
+				sb.append(" - ").append(String.format("(%d,%d)", loc.x(), loc.y()));
+			}
+
+			// Append airport
+			Location airport = locations.getLast();
+			sb.append(" - ").append(String.format("(%d,%d)", airport.x(), airport.y()));
+
+			// Print the formatted string
+			System.out.println(sb.toString());
+
+		} catch (Exception e) {
+			System.out.println("Error printing initial solution: " + e.getMessage());
+		}
 	}
 
 	/**
@@ -469,6 +583,13 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public void printObjectiveValueOfTheInitialSolution() {
 
-		// TODO
+		// Check if we have at least one solution in memory
+		if (solutionMemory == null || solutionMemory.length == 0 || solutionMemory[0] == null) {
+			System.out.println("No initial solution available. Call initialiseSolution() first.");
+			return;
+		}
+
+		// Print the objective value of the first initial solution found
+		System.out.println("Initial solution objective value: " + solutionMemory[0].getObjectiveFunctionValue());
 	}
 }

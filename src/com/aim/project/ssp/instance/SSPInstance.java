@@ -92,6 +92,16 @@ public class SSPInstance implements SSPInstanceInterface {
 				visited[nearestLocationIndex] = true;
 				currentLocation = aoLocations[nearestLocationIndex];
 			}
+
+			// Build solution object
+			SolutionRepresentation solutionRep = new SolutionRepresentation(representation);
+			SSPSolution solution = new SSPSolution(solutionRep, 0);
+
+			// Evaluate and set correct objective value
+			int cost = f.getObjectiveFunctionValue(solutionRep);
+			solution.setObjectiveFunctionValue(cost);
+
+			return solution;
 		}
 
 		// Create the solution representation

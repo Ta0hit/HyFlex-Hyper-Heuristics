@@ -107,8 +107,14 @@ public class SSPInstance implements SSPInstanceInterface {
 		// Create the solution representation
 		SolutionRepresentation solutionRep = new SolutionRepresentation(representation);
 
-		// Create and return the solution (temporarily using 0 as the objective value)
-		return new SSPSolution(solutionRep, 0);
+		// Build the SSPSolution
+		SSPSolution solution = new SSPSolution(solutionRep, 0);
+
+		// Evaluate and set the true objective value
+		int cost = f.getObjectiveFunctionValue(solutionRep);
+		solution.setObjectiveFunctionValue(cost);
+
+		return solution;
 	}
 
 	/**

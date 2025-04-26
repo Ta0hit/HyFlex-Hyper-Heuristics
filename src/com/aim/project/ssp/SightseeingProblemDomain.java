@@ -25,16 +25,11 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 
     public SSPInstanceInterface m_oInstance;
 	public SSPSolutionInterface m_oBestSolution;
-	private final SSPSolutionInterface[] solutionMemory;
+	private SSPSolutionInterface[] solutionMemory;
 	private final HeuristicInterface[] heuristics;
 
 	public SightseeingProblemDomain(long seed) {
         super(seed);
-
-		// Set default memory size (typically 2 for simple implementations)
-		int memorySize = 2;
-		setMemorySize(memorySize);
-        solutionMemory = new SSPSolutionInterface[memorySize];
 
 		// Initialise the array of low-level heuristics
         heuristics = new HeuristicInterface[]{
@@ -84,7 +79,7 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 
 		// If this is a first-time operation, ensure solutions exist
 		if(currentSolution == null) {
-			throw new IllegalStateException("Source solution is null. Did you initialize the solutions?");
+			throw new IllegalStateException("Source solution is null. Did you initialise the solutions?");
 		}
 
 		// Create a copy of the source solution to modify
@@ -128,7 +123,7 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 
 		// If this is a first-time operation, ensure solutions exist
 		if(parent1Solution == null || parent2Solution == null) {
-			throw new IllegalStateException("Source solutions are null. Did you initialize the solutions?");
+			throw new IllegalStateException("Source solutions are null. Did you initialise the solutions?");
 		}
 
 		// Create a copy of the first parent solution to modify
@@ -176,7 +171,7 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 
 		// Ensure both solutions are not null
 		if(solution1 == null || solution2 == null) {
-			throw new IllegalStateException("One or both solutions are null. Ensure solutions are initialized.");
+			throw new IllegalStateException("One or both solutions are null. Ensure solutions are initialised.");
 		}
 
 		// Compare the structures of the two solutions
@@ -194,7 +189,7 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 
 		// Ensure the source solution is not null
 		if(sourceSolution == null) {
-			throw new IllegalStateException("Source solution is null. Ensure the solution is initialized.");
+			throw new IllegalStateException("Source solution is null. Ensure the solution is initialised.");
 		}
 
 		// Clone the source solution and store it at the destination index
@@ -223,7 +218,7 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 
 		// Ensure the solution is not null
 		if(solution == null) {
-			throw new IllegalStateException("Solution at index " + index + " is null. Ensure it is initialized.");
+			throw new IllegalStateException("Solution at index " + index + " is null. Ensure it is initialised.");
 		}
 
 		//Return the objective function value of the solution
@@ -319,6 +314,10 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public void loadInstance(int instanceId) {
 
+		// Set default memory size (typically 2 for simple implementations)
+		int memorySize = 2;
+		setMemorySize(memorySize);
+
 		// Validate instance ID
 		if(instanceId < 0 || instanceId >= getNumberOfInstances()) {
 			throw new IllegalArgumentException("Invalid instance ID: " + instanceId);
@@ -344,6 +343,7 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 		// TODO CHANGE PATH FOR LAPTOP
 		String projectRoot = System.getProperty("user.dir"); // Gets the project root directory
 		Path instancePath = Path.of("C:\\Users\\Taohi\\HyFlex-Hyper-Heuristics\\src\\instances\\ssp", filename);
+		System.out.println("Loading instance from: " + instancePath.toString());
 
 		try {
 			// Read the instance file
@@ -372,33 +372,14 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 			throw new IllegalArgumentException("Memory size must be greater than 0");
 		}
 
-		// Create new solution memory array
+		// allocate the memory array but only initialise if instance is ready
 		SSPSolutionInterface[] newMemory = new SSPSolutionInterface[size];
+		// (copy over if you want)
+		solutionMemory = newMemory;
 
-		// Copy existing solutions to the new array (if any)
-		if(solutionMemory != null) {
-			int elementsToCopy = Math.min(solutionMemory.length, size);
-			System.arraycopy(solutionMemory, 0, newMemory, 0, elementsToCopy);
-
-			// Update best solution reference if it exists in the old array (remove if not)
-			if(m_oBestSolution != null) {
-				boolean bestSolutionPreserved = false;
-				for(int i = 0; i < elementsToCopy; i++) {
-					if(solutionMemory[i] == m_oBestSolution) {
-						bestSolutionPreserved = true;
-						break;
-					}
-				}
-				if(!bestSolutionPreserved) {
-					m_oBestSolution = null;
-				}
-			}
-		}
-
-		// Update the memory reference
-		for(int i = 0; i < newMemory.length; i++) {
-			if(newMemory[i] == null) {
-				// Initialize new slots if needed
+		// only initialise if loadInstance() has already set m_oInstance
+		if (m_oInstance != null) {
+			for (int i = 0; i < size; i++) {
 				initialiseSolution(i);
 			}
 		}
@@ -417,7 +398,7 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 
 		// Ensure the solution is not null
 		if(solution == null) {
-			throw new IllegalStateException("Solution at index " + index + " is null. Ensure it is initialized.");
+			throw new IllegalStateException("Solution at index " + index + " is null. Ensure it is initialised.");
 		}
 
 		// Return the string representation of the solution
@@ -447,7 +428,7 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 			return locationList.toArray(new Location[0]);
 		}
 		else {
-			throw new IllegalStateException("No best solution found. Ensure a solution is initialized.");
+			throw new IllegalStateException("No best solution found. Ensure a solution is initialised.");
 		}
 	}
 

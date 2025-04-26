@@ -2,6 +2,8 @@ package com.aim.project.ssp.instance;
 
 import java.util.ArrayList;
 import java.util.Random;
+
+import com.aim.project.ssp.SSPObjectiveFunction;
 import com.aim.project.ssp.interfaces.ObjectiveFunctionInterface;
 import com.aim.project.ssp.interfaces.SSPInstanceInterface;
 import com.aim.project.ssp.interfaces.SSPSolutionInterface;
@@ -25,7 +27,7 @@ public class SSPInstance implements SSPInstanceInterface {
 
 	private final Random oRandom;
 
-	private ObjectiveFunctionInterface f = null;
+	private ObjectiveFunctionInterface f;
 
 	public SSPInstance(int iNumberOfLocations, Location[] aoLocations, Location oHotelLocation, Location oAirportLocation, Random random) {
 
@@ -34,6 +36,7 @@ public class SSPInstance implements SSPInstanceInterface {
 		this.aoLocations = aoLocations;
 		this.oHotelLocation = oHotelLocation;
 		this.oAirportLocation = oAirportLocation;
+		this.f = new SSPObjectiveFunction( this);
 	}
 
 	@Override

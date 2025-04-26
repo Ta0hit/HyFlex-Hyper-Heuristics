@@ -33,7 +33,7 @@ public class SSPObjectiveFunction implements ObjectiveFunctionInterface {
 		totalCost += getCostBetweenHotelAnd(oSolution.getSolutionRepresentation()[0]);
 
 		// Add costs between consecutive locations
-		for(int i = 0; i < oSolution.getNumberOfLocations() - 2; i++) {
+		for(int i = 0; i < oSolution.getNumberOfLocations() - 3; i++) {
 			totalCost += getCost(
 					oSolution.getSolutionRepresentation()[i],
 					oSolution.getSolutionRepresentation()[i + 1]);

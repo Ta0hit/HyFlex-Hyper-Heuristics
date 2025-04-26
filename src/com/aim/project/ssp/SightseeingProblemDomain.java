@@ -314,10 +314,6 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	@Override
 	public void loadInstance(int instanceId) {
 
-		// Set default memory size (typically 2 for simple implementations)
-		int memorySize = 2;
-		setMemorySize(memorySize);
-
 		// Validate instance ID
 		if(instanceId < 0 || instanceId >= getNumberOfInstances()) {
 			throw new IllegalArgumentException("Invalid instance ID: " + instanceId);
@@ -354,6 +350,10 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 			for(HeuristicInterface heuristic : heuristics) {
 				heuristic.setObjectiveFunction(objectiveFunction);
 			}
+
+			// Set default memory size (typically 2 for simple implementations)
+			int memorySize = 2;
+			setMemorySize(memorySize);
 
 			// Reset solution memory and best solution
 			Arrays.fill(solutionMemory, null);

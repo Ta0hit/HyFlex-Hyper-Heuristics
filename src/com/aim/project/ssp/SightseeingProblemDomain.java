@@ -36,13 +36,16 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
                 // Mutation operators
                 new AdjacentSwap(rng),
                 new Reinsertion(rng),
+				new InversionMutation(rng),
 
                 // Local search operators
                 new DavissHillClimbing(rng),
                 new NextDescent(rng),
+				new TwoOpt(rng),
 
                 // Crossover operators
-                new OX(rng)
+                new OX(rng),
+				new OnePointX(rng),
         };
 	}
 	
@@ -229,21 +232,21 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	public int[] getHeuristicsOfType(HeuristicType type) {
 
 		// Define which heuristics belong to which types based on their indices
-        return switch (type) {
-            case MUTATION ->
-                // AdjacentSwap (0) and Reinsertion (1) are mutation operators
-                    new int[]{0, 1};
-            case LOCAL_SEARCH ->
-                // DavissHillClimbing (2) and NextDescent (3) are local search operators
-                    new int[]{2, 3};
-            case CROSSOVER ->
-                // OX (4) is a crossover operator
-                    new int[]{4};
-            case RUIN_RECREATE ->
-                // No ruin-recreate heuristics in current implementation
-                    null;
-            default -> null;
-        };
+		return switch (type) {
+			case MUTATION ->
+				// AdjacentSwap (0), Reinsertion (1), and InversionMutation (2) are mutation operators
+					new int[]{0, 1, 2};
+			case LOCAL_SEARCH ->
+				// DavissHillClimbing (3), NextDescent (4), and TwoOpt (5) are local search operators
+					new int[]{3, 4, 5};
+			case CROSSOVER ->
+				// OX (6) and OnePointX (7) are crossover operators
+					new int[]{6, 7};
+			case RUIN_RECREATE ->
+				// No ruin-recreate heuristics in current implementation
+					null;
+			default -> null;
+		};
 	}
 
 	@Override
@@ -286,7 +289,7 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 	public int getNumberOfHeuristics() {
 
 		// Needs to be hardcoded because of HyFlex
-		return 5;
+		return 8;
 	}
 
 	@Override

@@ -75,4 +75,8 @@ public class SSPObjectiveFunction implements ObjectiveFunctionInterface {
 		double dy = loc1.y() - loc2.y();
 		return Math.ceil(Math.sqrt(dx * dx + dy * dy));
 	}
+
+	public SSPInstanceInterface getInstance() {
+		return oInstance;
+	}
 }

@@ -342,7 +342,6 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 		// TODO CHANGE PATH FOR LAPTOP
 		String projectRoot = System.getProperty("user.dir"); // Gets the project root directory
 		Path instancePath = Path.of("C:\\Users\\Taohi\\HyFlex-Hyper-Heuristics\\src\\instances\\ssp", filename);
-		System.out.println("Loading instance from: " + instancePath.toString());
 
 		try {
 			// Read the instance file
@@ -477,7 +476,7 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 			sb.append(" - ").append(String.format("(%d,%d)", airport.x(), airport.y()));
 
 			// Print the formatted string
-			System.out.println(sb.toString());
+			System.out.println(sb);
 
 		} catch (Exception e) {
 			System.out.println("Error printing solution: " + e.getMessage());
@@ -544,7 +543,7 @@ public class SightseeingProblemDomain extends ProblemDomain implements Visualisa
 			sb.append(" - ").append(String.format("(%d,%d)", airport.x(), airport.y()));
 
 			// Print the formatted string
-			System.out.println(sb.toString());
+			System.out.println(sb);
 
 		} catch (Exception e) {
 			System.out.println("Error printing initial solution: " + e.getMessage());

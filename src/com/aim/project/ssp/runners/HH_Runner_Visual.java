@@ -25,9 +25,9 @@ public abstract class HH_Runner_Visual {
 	public void run() {
 		
 		long seed = 17032025L;
-		long timeLimit = 300000L;
+		long timeLimit = 150000L;
 		SightseeingProblemDomain problem = new SightseeingProblemDomain(seed);
-		problem.loadInstance(0);
+		problem.loadInstance(6);
 		HyperHeuristic hh = getHyperHeuristic(seed);
 		hh.setTimeLimit(timeLimit);
 		hh.loadProblemDomain(problem);

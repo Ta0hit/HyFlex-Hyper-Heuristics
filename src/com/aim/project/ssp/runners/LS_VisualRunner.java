@@ -1,5 +1,6 @@
 package com.aim.project.ssp.runners;
 
+import com.aim.project.ssp.hyperheuristics.LS_HH;
 import com.aim.project.ssp.hyperheuristics.LS2_HH;
 import AbstractClasses.HyperHeuristic;
 

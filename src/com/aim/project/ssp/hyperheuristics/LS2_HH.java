@@ -16,7 +16,7 @@ public class LS2_HH extends HyperHeuristic {
     private static final int CURRENT_SOLUTION_INDEX = 0;
     private static final int CANDIDATE_SOLUTION_INDEX = 1;
 
-    private static final double ALPHA = 0.1;
+    private static final double ALPHA = 0.01;
     private static final double BETA = 2.0;
     private static final int DEFAULT_SCORE = 10;
     private static final int MIN_SCORE = 1;
